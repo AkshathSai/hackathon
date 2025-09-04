@@ -31,8 +31,7 @@ spec:
     defaultRequest:
       cpu: "25m"
       memory: "64Mi"
-    type: Container
-  - max:
+    max:
       cpu: "300m"
       memory: "256Mi"
     min:
