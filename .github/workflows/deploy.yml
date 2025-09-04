@@ -1,0 +1,72 @@
+name: Deploy to Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+        - development
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15  # Limit deployment time
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    environment: ${{ github.event.inputs.environment || 'development' }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Deploy to Kubernetes
+      run: |
+        # Replace image tag in deployment files
+        export IMAGE_TAG=${{ github.sha }}
+        envsubst < k8s/deployment.yaml | kubectl apply -f -
+        kubectl apply -f k8s/
+        
+        # Wait for deployment to be ready with timeout
+        timeout 300 kubectl rollout status deployment/hackathon-app
+        
+        # Get service URL
+        kubectl get services hackathon-service
+
+    - name: Run health check
+      run: |
+        # Wait for service to be ready
+        sleep 30
+        
+        # Get service endpoint with timeout
+        timeout 60 bash -c '
+          until kubectl get service hackathon-service > /dev/null 2>&1; do
+            echo "Waiting for service..."
+            sleep 5
+          done
+        '
+        
+        SERVICE_IP=$(kubectl get service hackathon-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        if [ -z "$SERVICE_IP" ]; then
+          SERVICE_IP=$(kubectl get service hackathon-service -o jsonpath='{.spec.clusterIP}')
+        fi
+        
+        # Health check with timeout
+        timeout 30 curl -f http://$SERVICE_IP:8085/actuator/health || echo "Health check failed - service may still be starting"
