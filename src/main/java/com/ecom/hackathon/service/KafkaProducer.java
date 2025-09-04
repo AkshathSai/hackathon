@@ -17,7 +17,7 @@ public class KafkaProducer {
     final KafkaTemplate<String, DeliveryDetails> kafkaTemplate;
 
     public KafkaResponse postOrderDetails(OrderDetails orderDetails) {
-        DeliveryDetails deliveryDetails = convertOrderDetailsToOrderResponse(orderDetails);
+        DeliveryDetails deliveryDetails = generateDeliveryDetails(orderDetails);
         // Assuming expected delivery is 7 days from order date for simplicity
         deliveryDetails.setExpectedDate("11-09-2025"); // Placeholder date
         kafkaTemplate.send(ECOM_ORDER_TOPIC, deliveryDetails);
@@ -25,7 +25,7 @@ public class KafkaProducer {
         return new KafkaResponse("Order details posted to Delivery Service", deliveryDetails);
     }
 
-    public DeliveryDetails convertOrderDetailsToOrderResponse(OrderDetails orderDetails) {
+    public DeliveryDetails generateDeliveryDetails(OrderDetails orderDetails) {
         DeliveryDetails deliveryDetails = new DeliveryDetails();
         deliveryDetails.setOrderId(orderDetails.getOrderId());
         deliveryDetails.setProductName(orderDetails.getProductName());

@@ -63,7 +63,7 @@ class KafkaProducerTest {
     }
 
     @Test
-    void convertOrderDetailsToOrderResponse_ShouldMapAllFields() {
+    void generateDeliveryDetails_ShouldMapAllFields() {
         // Given
         OrderDetails orderDetails = new OrderDetails();
         orderDetails.setOrderId("ORDER456");
@@ -74,7 +74,7 @@ class KafkaProducerTest {
         orderDetails.setOrderDate("2025-09-05");
 
         // When
-        DeliveryDetails result = kafkaProducer.convertOrderDetailsToOrderResponse(orderDetails);
+        DeliveryDetails result = kafkaProducer.generateDeliveryDetails(orderDetails);
 
         // Then
         assertNotNull(result);
@@ -88,13 +88,13 @@ class KafkaProducerTest {
     }
 
     @Test
-    void convertOrderDetailsToOrderResponse_ShouldHandleNullValues() {
+    void generateDeliveryDetails_ShouldHandleNullValues() {
         // Given
         OrderDetails orderDetails = new OrderDetails();
         // Only set some fields
 
         // When
-        DeliveryDetails result = kafkaProducer.convertOrderDetailsToOrderResponse(orderDetails);
+        DeliveryDetails result = kafkaProducer.generateDeliveryDetails(orderDetails);
 
         // Then
         assertNotNull(result);
