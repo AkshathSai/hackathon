@@ -1,42 +1,41 @@
 apiVersion: v1
 kind: ResourceQuota
 metadata:
-  name: free-tier-quota
+  name: killercoda-quota
   namespace: default
 spec:
   hard:
-    # CPU limits for free tier
-    requests.cpu: "1"
-    limits.cpu: "2"
-    # Memory limits for free tier
-    requests.memory: 1Gi
-    limits.memory: 2Gi
-    # Storage limits
-    persistentvolumeclaims: "3"
-    requests.storage: "5Gi"
-    # Pod limits
-    pods: "10"
-    services: "5"
+    # Ultra-minimal CPU limits for 1-core Killercoda
+    requests.cpu: "800m"
+    limits.cpu: "1000m"
+    # Minimal memory limits for 1-core environment
+    requests.memory: 800Mi
+    limits.memory: 1200Mi
+    # Reduced storage limits
+    persistentvolumeclaims: "2"
+    requests.storage: "3Gi"
+    # Minimal pod limits
+    pods: "8"
+    services: "4"
 ---
 apiVersion: v1
 kind: LimitRange
 metadata:
-  name: free-tier-limits
+  name: killercoda-limits
   namespace: default
 spec:
   limits:
   - default:
-      cpu: "200m"
-      memory: "256Mi"
-    defaultRequest:
-      cpu: "50m"
+      cpu: "100m"
       memory: "128Mi"
+    defaultRequest:
+      cpu: "25m"
+      memory: "64Mi"
     type: Container
   - max:
-      cpu: "500m"
-      memory: "512Mi"
+      cpu: "300m"
+      memory: "256Mi"
     min:
       cpu: "10m"
       memory: "32Mi"
     type: Container
-

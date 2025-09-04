@@ -24,18 +24,18 @@ spec:
           value: "ecomapp"
         resources:
           requests:
-            memory: "128Mi"  # Reduced from 256Mi
-            cpu: "100m"     # Reduced from 250m
+            memory: "96Mi"   # Ultra-minimal for 1-core
+            cpu: "50m"      # Reduced CPU
           limits:
-            memory: "256Mi"  # Reduced from 512Mi
-            cpu: "200m"     # Reduced from 500m
+            memory: "192Mi"  # Conservative limits
+            cpu: "150m"     # Reduced CPU limit
         volumeMounts:
         - name: mongodb-storage
           mountPath: /data/db
       volumes:
       - name: mongodb-storage
         emptyDir:
-          sizeLimit: 1Gi  # Limit storage size
+          sizeLimit: 500Mi  # Reduced storage size
 ---
 apiVersion: v1
 kind: Service

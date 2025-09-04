@@ -5,7 +5,7 @@ metadata:
   labels:
     app: hackathon-app
 spec:
-  replicas: 1  # Reduced from 2 for free tier
+  replicas: 1
   selector:
     matchLabels:
       app: hackathon-app
@@ -27,30 +27,30 @@ spec:
         - name: SERVER_PORT
           value: "8085"
         - name: JAVA_OPTS
-          value: "-Xmx384m -Xms128m"  # Reduced memory for free tier
+          value: "-Xmx200m -Xms64m -XX:MaxMetaspaceSize=128m"  # Ultra-minimal for 1-core
         resources:
           requests:
-            memory: "256Mi"  # Reduced from 512Mi
-            cpu: "100m"      # Reduced from 250m
+            memory: "128Mi"  # Reduced for 1-core Killercoda
+            cpu: "50m"       # Ultra-minimal CPU
           limits:
-            memory: "512Mi"  # Reduced from 1Gi
-            cpu: "300m"      # Reduced from 500m
+            memory: "256Mi"  # Reduced limits
+            cpu: "200m"      # Conservative CPU limit
         livenessProbe:
           httpGet:
             path: /actuator/health
             port: 8085
-          initialDelaySeconds: 90  # Increased for slower startup
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 5
+          initialDelaySeconds: 120  # Extended for slow 1-core startup
+          periodSeconds: 45
+          timeoutSeconds: 15
+          failureThreshold: 6
         readinessProbe:
           httpGet:
             path: /actuator/health/readiness
             port: 8085
-          initialDelaySeconds: 60
-          periodSeconds: 15
-          timeoutSeconds: 10
-          failureThreshold: 3
+          initialDelaySeconds: 90
+          periodSeconds: 30
+          timeoutSeconds: 15
+          failureThreshold: 5
 ---
 apiVersion: v1
 kind: Service
@@ -59,12 +59,12 @@ metadata:
   labels:
     app: hackathon-app
 spec:
-  type: NodePort  # Changed from LoadBalancer for Minikube compatibility
+  type: NodePort
   selector:
     app: hackathon-app
   ports:
   - port: 8085
     targetPort: 8085
-    nodePort: 30085  # Fixed port for easy access
+    nodePort: 30085
     protocol: TCP
     name: http
